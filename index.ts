@@ -16,17 +16,17 @@ import { promises as fsPromises } from 'fs';
   await fsPromises.mkdir('./output');
 
   Promise.all(
-    articles.map(async (article: any, index: number) => {
+    articles.map(async (article: any) => {
       const result: Response = await fetch(`${article.url}.md`);
       const text = await result.text();
-
-      await fsPromises.mkdir(`./output/${index}`);
-      await fsPromises.mkdir(`./output/${index}/img`);
 
       const images = text.match(/<img(.|\s)*?>/gi);
       const mdImages = text.match(/!\[.*\]\((.*)\)/gi);
 
-      await fsPromises.writeFile(`./output/${index}/text.md`, text);
+      const title = text.match(/title:\s(.*)/)![1];
+      await fsPromises.mkdir(`./output/${title}`);
+      await fsPromises.mkdir(`./output/${title}/img`);
+      await fsPromises.writeFile(`./output/${title}/text.md`, text);
 
       images &&
         (await Promise.all(
@@ -34,7 +34,7 @@ import { promises as fsPromises } from 'fs';
             const url = image.match(/src=["|'](.*?)["|']/)![1];
             const fileName = url.match(/[^/]+$/i)![0];
             const response: any = await axios.get(url, { responseType: 'arraybuffer' });
-            await fsPromises.writeFile(`./output/${index}/img/${String(fileName)}`, Buffer.from(response.data));
+            await fsPromises.writeFile(`./output/${title}/img/${String(fileName)}`, Buffer.from(response.data));
           }),
         ));
       mdImages &&
@@ -43,7 +43,7 @@ import { promises as fsPromises } from 'fs';
             const url = mdImage.match(/!\[.*\]\((.*)\)/)![1];
             const fileName = url.match(/[^/]+$/i)![0];
             const response: any = await axios.get(url, { responseType: 'arraybuffer' });
-            await fsPromises.writeFile(`./output/${index}/img/${String(fileName)}`, Buffer.from(response.data));
+            await fsPromises.writeFile(`./output/${title}/img/${String(fileName)}`, Buffer.from(response.data));
           }),
         ));
     }),

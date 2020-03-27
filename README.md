@@ -16,6 +16,13 @@ yarn install
 yarn start
 ```
 
+#### with docker 
+
+```
+$ docker build -t export-qiita .
+$ docker run -it -v `pwd`/output:/tmp/output export-qiita
+```
+
 ### output sample
 ```
 cd output
